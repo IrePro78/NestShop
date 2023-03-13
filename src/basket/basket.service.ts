@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { AddProductDto } from './dto/add-product-dto';
 import {
   AddProductToBasketResponse,
@@ -12,7 +12,9 @@ import { ListProductsInBasketResponse } from '../interfaces/basket';
 export class BasketService {
   private items: AddProductDto[] = [];
 
-  constructor(@Inject(ShopService) private shopService: ShopService) {}
+  constructor(
+    @Inject(forwardRef(() => ShopService)) private shopService: ShopService,
+  ) {}
 
   add(item: AddProductDto): AddProductToBasketResponse {
     const { name, count } = item;

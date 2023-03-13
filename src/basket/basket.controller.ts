@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  forwardRef,
   Get,
   Inject,
   Param,
@@ -13,7 +14,10 @@ import { RemoveProductFromBasketResponse } from '../interfaces/basket';
 
 @Controller('basket')
 export class BasketController {
-  constructor(@Inject(BasketService) private basketService: BasketService) {}
+  constructor(
+    @Inject(forwardRef(() => BasketService))
+    private basketService: BasketService,
+  ) {}
 
   @Post('/')
   addToBasket(@Body() item: AddProductDto) {
