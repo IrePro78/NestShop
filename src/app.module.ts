@@ -10,9 +10,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: 'localhost',
-      port: 3307,
-      username: 'user',
-      password: 'user123',
+      port: 3306,
+      username: 'root',
+      password: 'admin123',
       database: 'shopNest',
       entities: ['dist/**/**.entity{.ts,.js}'],
       bigNumberStrings: false,
