@@ -1,13 +1,15 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
-export class ShopItem {
-  @PrimaryGeneratedColumn()
-  id: number;
-  @Column()
+export class ShopItem extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+  @Column({ type: 'varchar', length: 100 })
   name: string;
-  @Column()
+  @Column('text')
   description: string;
-  @Column()
+  @Column({ type: 'float', precision: 6, scale: 2 })
   price: number;
+  @Column({ default: () => 'CURRENT_TIMESTAMP' })
+  createdAt: Date;
 }

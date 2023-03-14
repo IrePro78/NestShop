@@ -4,17 +4,18 @@ import { AppService } from './app.service';
 import { ShopModule } from './shop/shop.module';
 import { BasketModule } from './basket/basket.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ShopItem } from './shop/shop-item.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: 'localhost',
-      port: 3306,
+      port: 3308,
       username: 'root',
-      password: 'admin123',
+      password: 'root123',
       database: 'shopNest',
-      entities: ['dist/**/**.entity{.ts,.js}'],
+      entities: [ShopItem],
       bigNumberStrings: false,
       logging: true,
       synchronize: true,
