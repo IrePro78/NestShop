@@ -26,6 +26,11 @@ export class ShopController {
     return this.shopService.getProducts();
   }
 
+  @Get('/find')
+  testFind(): Promise<GetListProductsResponse> {
+    return this.shopService.findProducts();
+  }
+
   @Get('/:id')
   async getOneProduct(@Param('id') id: string): Promise<GetOneProductResponse> {
     return await this.shopService.getOneProduct(id);

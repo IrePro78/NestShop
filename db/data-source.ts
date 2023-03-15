@@ -1,6 +1,4 @@
 import { DataSource, DataSourceOptions } from 'typeorm';
-import { ShopItem } from '../src/shop/shop-item.entity';
-import { Basket } from '../src/basket/basket.entity';
 
 export const dataSourceOptions: DataSourceOptions = {
   type: 'mysql',
@@ -9,11 +7,11 @@ export const dataSourceOptions: DataSourceOptions = {
   username: 'root',
   password: 'root123',
   database: 'shopNest',
-  // entities: ['dist/**/*.entity.js'],
-  entities: [ShopItem, Basket],
+  entities: ['dist/**/*.entity.js'],
   bigNumberStrings: false,
   logging: true,
   synchronize: true,
   migrations: ['dist/db/migrations/*.js'],
 };
-export const dataSource = new DataSource(dataSourceOptions);
+const dataSource = new DataSource(dataSourceOptions);
+export default dataSource;

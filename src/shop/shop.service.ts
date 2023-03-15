@@ -51,12 +51,7 @@ export class ShopService {
     await item.save();
   }
 
-  // async updateProduct(obj: NewItemEntity) {
-  //   const newItem = new ShopItem();
-  //   const { name, description, price } = obj;
-  //   newItem.name = name;
-  //   newItem.description = description;
-  //   newItem.price = price;
-  //   return await this.shopItemRepository.save(newItem);
-  // }
+  async findProducts(): Promise<GetListProductsResponse> {
+    return await ShopItem.find({ order: { price: 'ASC' } });
+  }
 }
