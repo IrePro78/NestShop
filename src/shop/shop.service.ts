@@ -1,21 +1,18 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { GetListProductsResponse, NewItemEntity } from '../interfaces/shop';
 import { BasketService } from '../basket/basket.service';
-import { InjectRepository } from '@nestjs/typeorm';
 import { ShopItem } from './shop-item.entity';
-import { DeleteResult, Repository } from 'typeorm';
+import { DeleteResult } from 'typeorm';
 
 @Injectable()
 export class ShopService {
   constructor(
     @Inject(forwardRef(() => BasketService))
     private basketService: BasketService,
-    @InjectRepository(ShopItem)
-    private shopItemRepository: Repository<ShopItem>,
   ) {}
 
   async getProducts(): Promise<GetListProductsResponse> {
-    return await this.shopItemRepository.find();
+    return await ShopItem.find();
   }
 
   async hasProduct(name: string): Promise<boolean> {
@@ -27,11 +24,11 @@ export class ShopService {
   }
 
   async getOneProduct(id: string): Promise<ShopItem> {
-    return await this.shopItemRepository.findOneByOrFail({ id: id });
+    return ShopItem.findOneByOrFail({ id });
   }
 
   async removeProduct(id: string): Promise<DeleteResult> {
-    return await this.shopItemRepository.delete(id);
+    return ShopItem.delete(id);
   }
 
   async createProduct(obj: NewItemEntity) {
@@ -40,26 +37,26 @@ export class ShopService {
     newItem.name = name;
     newItem.description = description;
     newItem.price = price;
-    return await this.shopItemRepository.save(newItem);
+    return newItem.save();
   }
 
   async addBoughtCounter(id: string) {
-    await this.shopItemRepository.update(id, {
+    await ShopItem.update(id, {
       wasEverBought: true,
     });
-    const item = await this.shopItemRepository.findOneByOrFail({ id: id });
+    const item = await ShopItem.findOneByOrFail({ id });
 
     item.boughtCounter++;
 
-    await this.shopItemRepository.save(item);
+    await item.save();
   }
 
-  async updateProduct(obj: NewItemEntity) {
-    const newItem = new ShopItem();
-    const { name, description, price } = obj;
-    newItem.name = name;
-    newItem.description = description;
-    newItem.price = price;
-    return await this.shopItemRepository.save(newItem);
-  }
+  // async updateProduct(obj: NewItemEntity) {
+  //   const newItem = new ShopItem();
+  //   const { name, description, price } = obj;
+  //   newItem.name = name;
+  //   newItem.description = description;
+  //   newItem.price = price;
+  //   return await this.shopItemRepository.save(newItem);
+  // }
 }
