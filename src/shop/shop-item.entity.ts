@@ -12,4 +12,8 @@ export class ShopItem extends BaseEntity {
   price: number;
   @Column({ default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
+  @Column({ default: 0 })
+  boughtCounter: number;
+  @Column({ default: false })
+  wasEverBought: boolean;
 }

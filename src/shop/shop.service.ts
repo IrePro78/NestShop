@@ -1,9 +1,5 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import {
-  CreateProductResponse,
-  GetListProductsResponse,
-  NewItemEntity,
-} from '../interfaces/shop';
+import { GetListProductsResponse, NewItemEntity } from '../interfaces/shop';
 import { BasketService } from '../basket/basket.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ShopItem } from './shop-item.entity';
@@ -30,7 +26,7 @@ export class ShopService {
     return (await this.getProducts()).find((item) => item.name === name).price;
   }
 
-  async getOnetProduct(id: string): Promise<ShopItem> {
+  async getOneProduct(id: string): Promise<ShopItem> {
     return await this.shopItemRepository.findOneByOrFail({ id: id });
   }
 
@@ -39,6 +35,26 @@ export class ShopService {
   }
 
   async createProduct(obj: NewItemEntity) {
+    const newItem = new ShopItem();
+    const { name, description, price } = obj;
+    newItem.name = name;
+    newItem.description = description;
+    newItem.price = price;
+    return await this.shopItemRepository.save(newItem);
+  }
+
+  async addBoughtCounter(id: string) {
+    await this.shopItemRepository.update(id, {
+      wasEverBought: true,
+    });
+    const item = await this.shopItemRepository.findOneByOrFail({ id: id });
+
+    item.boughtCounter++;
+
+    await this.shopItemRepository.save(item);
+  }
+
+  async updateProduct(obj: NewItemEntity) {
     const newItem = new ShopItem();
     const { name, description, price } = obj;
     newItem.name = name;

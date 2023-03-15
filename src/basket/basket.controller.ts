@@ -10,7 +10,10 @@ import {
 } from '@nestjs/common';
 import { AddProductDto } from './dto/add-product-dto';
 import { BasketService } from './basket.service';
-import { RemoveProductFromBasketResponse } from '../interfaces/basket';
+import {
+  AddProductToBasketResponse,
+  RemoveProductFromBasketResponse,
+} from '../interfaces/basket';
 
 @Controller('basket')
 export class BasketController {
@@ -20,7 +23,7 @@ export class BasketController {
   ) {}
 
   @Post('/')
-  addToBasket(@Body() item: AddProductDto) {
+  addToBasket(@Body() item: AddProductDto): AddProductToBasketResponse {
     return this.basketService.add(item);
   }
 

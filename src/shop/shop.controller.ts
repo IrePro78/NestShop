@@ -28,7 +28,7 @@ export class ShopController {
 
   @Get('/:id')
   async getOneProduct(@Param('id') id: string): Promise<GetOneProductResponse> {
-    return await this.shopService.getOnetProduct(id);
+    return await this.shopService.getOneProduct(id);
   }
 
   @Delete('/:id')
