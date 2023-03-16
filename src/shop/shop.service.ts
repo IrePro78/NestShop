@@ -1,8 +1,12 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { GetListProductsResponse, NewItemEntity } from '../interfaces/shop';
+import {
+  GetListProductsResponse,
+  GetPaginatedListOfProductsResponse,
+  NewItemEntity,
+} from '../interfaces/shop';
 import { BasketService } from '../basket/basket.service';
 import { ShopItem } from './shop-item.entity';
-import { DeleteResult } from 'typeorm';
+import { DeleteResult, LessThan, Like } from 'typeorm';
 
 @Injectable()
 export class ShopService {
@@ -11,16 +15,29 @@ export class ShopService {
     private basketService: BasketService,
   ) {}
 
-  async getProducts(): Promise<GetListProductsResponse> {
-    return await ShopItem.find();
+  async getProducts(
+    currentPage = 1,
+  ): Promise<GetPaginatedListOfProductsResponse> {
+    const maxPerPage = 4;
+    const [items, count] = await ShopItem.findAndCount({
+      skip: maxPerPage * (currentPage - 1),
+      take: maxPerPage,
+    });
+    const pagesCount = Math.ceil(count / maxPerPage);
+    console.log({ count, pagesCount });
+    return {
+      items,
+      pagesCount,
+    };
   }
 
   async hasProduct(name: string): Promise<boolean> {
-    return (await this.getProducts()).some((item) => item.name === name);
+    return (await this.getProducts()).items.some((item) => item.name === name);
   }
 
   async getPriceOfProduct(name: string): Promise<number> {
-    return (await this.getProducts()).find((item) => item.name === name).price;
+    return (await this.getProducts()).items.find((item) => item.name === name)
+      .price;
   }
 
   async getOneProduct(id: string): Promise<ShopItem> {
@@ -51,7 +68,9 @@ export class ShopService {
     await item.save();
   }
 
-  async findProducts(): Promise<GetListProductsResponse> {
-    return await ShopItem.find({ order: { price: 'ASC' } });
+  async findProducts(searchTerm: string): Promise<GetListProductsResponse> {
+    return await ShopItem.find({
+      where: { description: Like(`%${searchTerm}%`) },
+    });
   }
 }

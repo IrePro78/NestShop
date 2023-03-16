@@ -12,6 +12,7 @@ import {
   CreateProductResponse,
   GetListProductsResponse,
   GetOneProductResponse,
+  GetPaginatedListOfProductsResponse,
 } from '../interfaces/shop';
 import { ShopService } from './shop.service';
 
@@ -21,14 +22,18 @@ export class ShopController {
     @Inject(forwardRef(() => ShopService)) private shopService: ShopService,
   ) {}
 
-  @Get('/')
-  getProducts(): Promise<GetListProductsResponse> {
-    return this.shopService.getProducts();
+  @Get('/:pageNumber')
+  getProducts(
+    @Param('pageNumber') pageNumber: string,
+  ): Promise<GetPaginatedListOfProductsResponse> {
+    return this.shopService.getProducts(Number(pageNumber));
   }
 
-  @Get('/find')
-  testFind(): Promise<GetListProductsResponse> {
-    return this.shopService.findProducts();
+  @Get('/find/:searchTerm')
+  findProduct(
+    @Param('searchTerm') searchTerm: string,
+  ): Promise<GetListProductsResponse> {
+    return this.shopService.findProducts(searchTerm);
   }
 
   @Get('/:id')
