@@ -7,6 +7,7 @@ import {
 import { BasketService } from '../basket/basket.service';
 import { ShopItem } from './shop-item.entity';
 import { DeleteResult, LessThan, Like } from 'typeorm';
+import { ShopItemDetails } from './shop-item-details.entity';
 
 @Injectable()
 export class ShopService {
@@ -54,7 +55,16 @@ export class ShopService {
     newItem.name = name;
     newItem.description = description;
     newItem.price = price;
-    return newItem.save();
+    await newItem.save();
+
+    const details = new ShopItemDetails();
+    details.color = 'green';
+    details.width = 20;
+    await details.save();
+
+    newItem.details = details;
+
+    return newItem;
   }
 
   async addBoughtCounter(id: string) {

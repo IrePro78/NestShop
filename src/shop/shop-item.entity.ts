@@ -3,10 +3,15 @@ import {
   Column,
   Entity,
   JoinColumn,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { ShopItemDetails } from './shop-item-details.entity';
+import { ShopSet } from './shop-set.entity';
 
 @Entity()
 export class ShopItem extends BaseEntity {
@@ -34,4 +39,14 @@ export class ShopItem extends BaseEntity {
   @OneToOne((type) => ShopItemDetails)
   @JoinColumn()
   details: ShopItemDetails;
+
+  // @ManyToOne((type) => ShopItem, (entity) => entity.subShopItems)
+  // mainShopItem: ShopItem;
+  //
+  // @OneToMany((type) => ShopItem, (entity) => entity.mainShopItem)
+  // subShopItems: ShopItem[];
+
+  @ManyToMany((type) => ShopSet, (entity) => entity.items)
+  @JoinTable()
+  sets: ShopSet[];
 }
