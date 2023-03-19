@@ -1,19 +1,20 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import {
   GetListProductsResponse,
-  GetPaginatedListOfProductsResponse,
-  NewItemEntity,
+  GetPaginatedListOfProductsResponse, ShopItemInterface
+
 } from '../interfaces/shop';
 import { BasketService } from '../basket/basket.service';
 import { ShopItem } from './shop-item.entity';
-import { DeleteResult, LessThan, Like } from 'typeorm';
 import { ShopItemDetails } from './shop-item-details.entity';
+import { DataSource, DeleteResult } from 'typeorm';
 
 @Injectable()
 export class ShopService {
   constructor(
     @Inject(forwardRef(() => BasketService))
     private basketService: BasketService,
+    private readonly dataSource: DataSource,
   ) {}
 
   async getProducts(
@@ -32,12 +33,12 @@ export class ShopService {
     };
   }
 
-  async hasProduct(name: string): Promise<boolean> {
-    return (await this.getProducts()).items.some((item) => item.name === name);
+  async hasProduct(id: string): Promise<boolean> {
+    return (await this.getProducts()).items.some((item) => item.id === id);
   }
 
-  async getPriceOfProduct(name: string): Promise<number> {
-    return (await this.getProducts()).items.find((item) => item.name === name)
+  async getPriceOfProduct(id: string): Promise<number> {
+    return (await this.getProducts()).items.find((item) => item.id === id)
       .price;
   }
 
@@ -49,7 +50,7 @@ export class ShopService {
     return ShopItem.delete(id);
   }
 
-  async createProduct(obj: NewItemEntity) {
+  async createProduct(obj: ShopItemInterface) {
     const newItem = new ShopItem();
     const { name, description, price } = obj;
     newItem.name = name;
@@ -79,8 +80,20 @@ export class ShopService {
   }
 
   async findProducts(searchTerm: string): Promise<GetListProductsResponse> {
-    return await ShopItem.find({
-      where: { description: Like(`%${searchTerm}%`) },
-    });
+    const { count } = await this.dataSource
+      .createQueryBuilder()
+      .select('COUNT(item.id)', 'count')
+      .from(ShopItem, 'item')
+      .getRawOne();
+    console.log({ count });
+
+    return await this.dataSource
+      .createQueryBuilder()
+      .select('item')
+      .from(ShopItem, 'item')
+      .where('item.description LIKE :searchTerm', {
+        searchTerm: `%${searchTerm}%`,
+      })
+      .getMany();
   }
 }

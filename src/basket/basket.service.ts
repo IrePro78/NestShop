@@ -7,6 +7,7 @@ import {
 } from '../interfaces/basket';
 import { ShopService } from '../shop/shop.service';
 import { ListProductsInBasketResponse } from '../interfaces/basket';
+import { ItemInBasket } from './basket.entity';
 
 @Injectable()
 export class BasketService {
@@ -16,52 +17,68 @@ export class BasketService {
     @Inject(forwardRef(() => ShopService)) private shopService: ShopService,
   ) {}
 
-  add(item: AddProductDto): AddProductToBasketResponse {
-    const { name, count, id } = item;
-    const { items } = this;
+  async add(product: AddProductDto): Promise<AddProductToBasketResponse> {
+    const { count, id } = product;
+
+    const shopItem = await this.shopService.getOneProduct(id);
 
     if (
-      typeof name !== 'string' ||
+      typeof id !== 'string' ||
       typeof count !== 'number' ||
-      name === '' ||
+      id === '' ||
       count <= 0 ||
-      !this.shopService.hasProduct(name)
+      !shopItem
     ) {
       return {
         isSuccess: false,
       };
     }
-    this.shopService.addBoughtCounter(id);
+    await this.shopService.addBoughtCounter(id);
 
-    items.push(item);
+    const item = new ItemInBasket();
+    item.count = count;
+    await item.save();
+
+    item.shopItem = shopItem;
+
+    await item.save();
 
     return {
       isSuccess: true,
-      index: this.items.length - 1,
+      id: item.id,
     };
   }
 
-  remove(index: number): RemoveProductFromBasketResponse {
-    const { items } = this;
-    if (index < 0 || index >= items.length) {
+  async remove(id: string): Promise<RemoveProductFromBasketResponse> {
+    const item = await ItemInBasket.findOneByOrFail({ id: id });
+
+    if (item) {
+      await item.remove();
       return {
-        isSuccess: false,
+        isSuccess: true,
       };
     }
-    items.splice(index, 1);
+    return {
+      isSuccess: false,
+    };
+  }
+
+  async clearBasket(): Promise<RemoveProductFromBasketResponse> {
+    await ItemInBasket.delete({});
     return {
       isSuccess: true,
     };
   }
 
-  list(): ListProductsInBasketResponse {
-    return this.items;
+  async getAll(): Promise<ListProductsInBasketResponse> {
+    return await ItemInBasket.find({ relations: ['shopItem'] });
   }
 
   async getTotalPrice(): Promise<GetTotalPriceResponse> {
-    if (!this.items.every((item) => this.shopService.hasProduct(item.name))) {
-      const alternativeBasket = this.items.filter((item) =>
-        this.shopService.hasProduct(item.name),
+    const items = await this.getAll();
+    if (!items.every((item) => this.shopService.hasProduct(item.id))) {
+      const alternativeBasket = items.filter((item) =>
+        this.shopService.hasProduct(item.id),
       );
       return {
         isSuccess: false,
@@ -70,12 +87,7 @@ export class BasketService {
     }
     return (
       await Promise.all(
-        this.items.map(
-          async (item) =>
-            (await this.shopService.getPriceOfProduct(item.name)) *
-            item.count *
-            1.23,
-        ),
+        items.map(async (item) => item.shopItem.price * item.count * 1.23),
       )
     ).reduce((acc, curr) => acc + curr, 0);
   }

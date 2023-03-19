@@ -5,23 +5,24 @@ import {
   JoinColumn,
   JoinTable,
   ManyToMany,
-  ManyToOne,
-  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { ShopItemDetails } from './shop-item-details.entity';
 import { ShopSet } from './shop-set.entity';
+import { ShopItemInterface } from '../interfaces/shop';
+import { ItemInBasket } from '../basket/basket.entity';
+
 
 @Entity()
-export class ShopItem extends BaseEntity {
+export class ShopItem extends BaseEntity implements ShopItemInterface {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'varchar', length: 100 })
+  @Column({ length: 50 })
   name: string;
 
-  @Column('text')
+  @Column({ length: 1000 })
   description: string;
 
   @Column({ type: 'float', precision: 6, scale: 2 })
@@ -39,6 +40,9 @@ export class ShopItem extends BaseEntity {
   @OneToOne((type) => ShopItemDetails)
   @JoinColumn()
   details: ShopItemDetails;
+
+  @OneToOne((type) => ItemInBasket, (entity) => entity.shopItem)
+  itemInBasket: ItemInBasket;
 
   // @ManyToOne((type) => ShopItem, (entity) => entity.subShopItems)
   // mainShopItem: ShopItem;

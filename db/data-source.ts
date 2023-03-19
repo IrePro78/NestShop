@@ -11,7 +11,7 @@ export const dataSourceOptions: DataSourceOptions = {
   bigNumberStrings: false,
   logging: true,
   synchronize: true,
-  migrations: ['dist/db/migrations/*.js'],
+  migrations: ['dist/db/migrations/**{.js,.ts}'],
 };
 const dataSource = new DataSource(dataSourceOptions);
 export default dataSource;

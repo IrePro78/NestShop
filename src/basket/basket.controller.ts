@@ -23,20 +23,27 @@ export class BasketController {
   ) {}
 
   @Post('/')
-  addToBasket(@Body() item: AddProductDto): AddProductToBasketResponse {
+  addToBasket(
+    @Body() item: AddProductDto,
+  ): Promise<AddProductToBasketResponse> {
     return this.basketService.add(item);
   }
 
-  @Delete('/:index')
+  @Delete('/all')
+  clearBasket(): Promise<RemoveProductFromBasketResponse> {
+    return this.basketService.clearBasket();
+  }
+
+  @Delete('/:id')
   removeProductFromBasket(
-    @Param('index') index: number,
-  ): RemoveProductFromBasketResponse {
-    return this.basketService.remove(index);
+    @Param('id') id: string,
+  ): Promise<RemoveProductFromBasketResponse> {
+    return this.basketService.remove(id);
   }
 
   @Get('/')
   getListProductInBasket() {
-    return this.basketService.list();
+    return this.basketService.getAll();
   }
 
   @Get('/total_price')

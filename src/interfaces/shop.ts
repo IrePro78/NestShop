@@ -1,21 +1,17 @@
-export interface ShopItem {
+export interface ShopItemInterface {
   id?: string;
   name: string;
   description: string;
   price: number;
 }
 
-export interface NewItemEntity extends Omit<ShopItem, 'id'> {
-  id?: string;
-}
+export type GetListProductsResponse = ShopItemInterface[];
 
-export type GetListProductsResponse = ShopItem[];
+export type GetOneProductResponse = ShopItemInterface;
 
-export type GetOneProductResponse = ShopItem;
-
-export type CreateProductResponse = ShopItem;
+export type CreateProductResponse = ShopItemInterface;
 
 export interface GetPaginatedListOfProductsResponse {
-  items: ShopItem[];
+  items: ShopItemInterface[];
   pagesCount: number;
 }

@@ -1,11 +1,23 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  JoinColumn,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { AddProductDto } from './dto/add-product-dto';
+import { ShopItem } from '../shop/shop-item.entity';
 
 @Entity()
-export class Basket extends BaseEntity {
+export class ItemInBasket extends BaseEntity implements AddProductDto {
   @PrimaryGeneratedColumn('uuid')
   id: string;
-  @Column({ type: 'varchar', length: 100 })
-  name: string;
+
   @Column()
   count: number;
+
+  @OneToOne((type) => ShopItem, (entity) => entity.itemInBasket)
+  @JoinColumn()
+  shopItem: ShopItem;
 }
