@@ -1,18 +1,21 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import {
   GetListProductsResponse,
-  GetPaginatedListOfProductsResponse, ShopItemInterface
-
+  GetPaginatedListOfProductsResponse,
+  ShopItemInterface,
 } from '../interfaces/shop';
+
 import { BasketService } from '../basket/basket.service';
 import { ShopItem } from './shop-item.entity';
 import { ShopItemDetails } from './shop-item-details.entity';
 import { DataSource, DeleteResult } from 'typeorm';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class ShopService {
   constructor(
     @Inject(forwardRef(() => BasketService))
+    @Inject(forwardRef(() => UserService))
     private basketService: BasketService,
     private readonly dataSource: DataSource,
   ) {}

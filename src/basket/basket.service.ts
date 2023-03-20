@@ -1,45 +1,52 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { AddProductDto } from './dto/add-product-dto';
 import {
   AddProductToBasketResponse,
   GetTotalPriceResponse,
   RemoveProductFromBasketResponse,
 } from '../interfaces/basket';
 import { ShopService } from '../shop/shop.service';
-import { ListProductsInBasketResponse } from '../interfaces/basket';
-import { ItemInBasket } from './basket.entity';
+import { GetBasketResponse } from '../interfaces/basket';
+import { ItemInBasket } from './item-in-basket.entity';
+import { UserService } from '../user/user.service';
+import { AddProductDto } from './dto/add-product.dto';
 
 @Injectable()
 export class BasketService {
-  private items: AddProductDto[] = [];
-
   constructor(
-    @Inject(forwardRef(() => ShopService)) private shopService: ShopService,
+    @Inject(forwardRef(() => ShopService))
+    private shopService: ShopService,
+    @Inject(forwardRef(() => UserService))
+    private userService: UserService,
   ) {}
 
   async add(product: AddProductDto): Promise<AddProductToBasketResponse> {
-    const { count, id } = product;
+    const { userId, productId, count } = product;
 
-    const shopItem = await this.shopService.getOneProduct(id);
+    const shopItem = await this.shopService.getOneProduct(productId);
+    const user = await this.userService.getOneUser(userId);
 
     if (
-      typeof id !== 'string' ||
+      typeof userId !== 'string' ||
+      typeof productId !== 'string' ||
       typeof count !== 'number' ||
-      id === '' ||
-      count <= 0 ||
-      !shopItem
+      userId === '' ||
+      productId === '' ||
+      count < 1 ||
+      !shopItem ||
+      !user
     ) {
       return {
         isSuccess: false,
       };
     }
-    await this.shopService.addBoughtCounter(id);
+    await this.shopService.addBoughtCounter(productId);
 
     const item = new ItemInBasket();
     item.count = count;
     await item.save();
 
     item.shopItem = shopItem;
+    item.user = user;
 
     await item.save();
 
@@ -70,25 +77,14 @@ export class BasketService {
     };
   }
 
-  async getAll(): Promise<ListProductsInBasketResponse> {
+  async getAll(): Promise<GetBasketResponse> {
     return await ItemInBasket.find({ relations: ['shopItem'] });
   }
 
   async getTotalPrice(): Promise<GetTotalPriceResponse> {
     const items = await this.getAll();
     if (!items.every((item) => this.shopService.hasProduct(item.id))) {
-      const alternativeBasket = items.filter((item) =>
-        this.shopService.hasProduct(item.id),
-      );
-      return {
-        isSuccess: false,
-        alternativeBasket: alternativeBasket,
-      };
     }
-    return (
-      await Promise.all(
-        items.map(async (item) => item.shopItem.price * item.count * 1.23),
-      )
-    ).reduce((acc, curr) => acc + curr, 0);
+    return null;
   }
 }

@@ -4,7 +4,7 @@ import { ShopService } from './shop.service';
 import { BasketModule } from '../basket/basket.module';
 
 @Module({
-  imports: [forwardRef(() => BasketModule)],
+  imports: [forwardRef(() => BasketModule), forwardRef(() => BasketModule)],
   controllers: [ShopController],
   providers: [ShopService],
   exports: [ShopService],

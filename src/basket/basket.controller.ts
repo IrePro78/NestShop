@@ -8,10 +8,11 @@ import {
   Param,
   Post,
 } from '@nestjs/common';
-import { AddProductDto } from './dto/add-product-dto';
+import { AddProductDto } from './dto/add-product.dto';
 import { BasketService } from './basket.service';
 import {
   AddProductToBasketResponse,
+  GetBasketResponse,
   RemoveProductFromBasketResponse,
 } from '../interfaces/basket';
 
@@ -41,8 +42,8 @@ export class BasketController {
     return this.basketService.remove(id);
   }
 
-  @Get('/')
-  getListProductInBasket() {
+  @Get('/:')
+  getBasket(): Promise<GetBasketResponse> {
     return this.basketService.getAll();
   }
 

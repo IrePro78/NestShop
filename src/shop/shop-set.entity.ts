@@ -14,6 +14,6 @@ export class ShopSet extends BaseEntity {
 
   @Column({ type: 'varchar', length: 50 })
   name: string;
-  @ManyToMany((type) => ShopItem, (entity) => entity.sets)
-  items: ShopItem[];
+  // @ManyToMany((type) => ShopItem, (entity) => entity.sets)
+  // items: ShopItem[];
 }

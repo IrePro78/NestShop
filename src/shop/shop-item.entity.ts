@@ -3,16 +3,13 @@ import {
   Column,
   Entity,
   JoinColumn,
-  JoinTable,
-  ManyToMany,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { ShopItemDetails } from './shop-item-details.entity';
-import { ShopSet } from './shop-set.entity';
 import { ShopItemInterface } from '../interfaces/shop';
-import { ItemInBasket } from '../basket/basket.entity';
-
+import { ItemInBasket } from '../basket/item-in-basket.entity';
 
 @Entity()
 export class ShopItem extends BaseEntity implements ShopItemInterface {
@@ -41,8 +38,8 @@ export class ShopItem extends BaseEntity implements ShopItemInterface {
   @JoinColumn()
   details: ShopItemDetails;
 
-  @OneToOne((type) => ItemInBasket, (entity) => entity.shopItem)
-  itemInBasket: ItemInBasket;
+  @OneToMany((type) => ItemInBasket, (entity) => entity.shopItem)
+  itemsInBasket: ItemInBasket[];
 
   // @ManyToOne((type) => ShopItem, (entity) => entity.subShopItems)
   // mainShopItem: ShopItem;
@@ -50,7 +47,7 @@ export class ShopItem extends BaseEntity implements ShopItemInterface {
   // @OneToMany((type) => ShopItem, (entity) => entity.mainShopItem)
   // subShopItems: ShopItem[];
 
-  @ManyToMany((type) => ShopSet, (entity) => entity.items)
-  @JoinTable()
-  sets: ShopSet[];
+  // @ManyToMany((type) => ShopSet, (entity) => entity.items)
+  // @JoinTable()
+  // sets: ShopSet[];
 }
