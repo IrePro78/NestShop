@@ -1,4 +1,5 @@
-import { AddProductDto } from '../basket/dto/add-product.dto';
+import { ShopItem } from '../shop/shop-item.entity';
+import { User } from '../user/user.entity';
 
 export type AddProductToBasketResponse =
   | {
@@ -16,8 +17,15 @@ export interface RemoveProductFromBasketResponse {
 export interface OneItemInBasket {
   id: string;
   count: number;
+  shopItem: ShopItem;
+  user: User;
 }
 
 export type GetBasketResponse = OneItemInBasket[];
 
 export type GetTotalPriceResponse = number;
+
+export interface GetBasketStatsResponse {
+  itemInBasketAvgPrice: number;
+  basketAvgTotalPrice: number;
+}

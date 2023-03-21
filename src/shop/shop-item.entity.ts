@@ -22,7 +22,7 @@ export class ShopItem extends BaseEntity implements ShopItemInterface {
   @Column({ length: 1000 })
   description: string;
 
-  @Column({ type: 'float', precision: 6, scale: 2 })
+  @Column({ type: 'float', precision: 7, scale: 2 })
   price: number;
 
   @Column({ default: () => 'CURRENT_TIMESTAMP' })

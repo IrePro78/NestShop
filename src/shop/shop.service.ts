@@ -29,7 +29,7 @@ export class ShopService {
       take: maxPerPage,
     });
     const pagesCount = Math.ceil(count / maxPerPage);
-    console.log({ count, pagesCount });
+    // console.log({ count, pagesCount });
     return {
       items,
       pagesCount,

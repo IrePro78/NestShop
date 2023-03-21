@@ -1,14 +1,17 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import {
   AddProductToBasketResponse,
+  GetBasketResponse,
+  GetBasketStatsResponse,
   GetTotalPriceResponse,
   RemoveProductFromBasketResponse,
 } from '../interfaces/basket';
 import { ShopService } from '../shop/shop.service';
-import { GetBasketResponse } from '../interfaces/basket';
 import { ItemInBasket } from './item-in-basket.entity';
 import { UserService } from '../user/user.service';
 import { AddProductDto } from './dto/add-product.dto';
+import { DataSource } from 'typeorm';
+import { of } from 'rxjs';
 
 @Injectable()
 export class BasketService {
@@ -17,6 +20,7 @@ export class BasketService {
     private shopService: ShopService,
     @Inject(forwardRef(() => UserService))
     private userService: UserService,
+    private readonly dataSource: DataSource,
   ) {}
 
   async add(product: AddProductDto): Promise<AddProductToBasketResponse> {
@@ -56,8 +60,23 @@ export class BasketService {
     };
   }
 
-  async remove(id: string): Promise<RemoveProductFromBasketResponse> {
-    const item = await ItemInBasket.findOneByOrFail({ id: id });
+  async remove(
+    userId: string,
+    itemInBasketId: string,
+  ): Promise<RemoveProductFromBasketResponse> {
+    const user = await this.userService.getOneUser(userId);
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+    const item = await ItemInBasket.findOneOrFail({
+      where: {
+        id: itemInBasketId,
+        user: {
+          id: userId,
+        },
+      },
+    });
 
     if (item) {
       await item.remove();
@@ -70,21 +89,87 @@ export class BasketService {
     };
   }
 
-  async clearBasket(): Promise<RemoveProductFromBasketResponse> {
-    await ItemInBasket.delete({});
+  async clearBasket(userId: string): Promise<RemoveProductFromBasketResponse> {
+    const user = await this.userService.getOneUser(userId);
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    await ItemInBasket.delete({
+      user: {
+        id: userId,
+      },
+    });
     return {
       isSuccess: true,
     };
   }
 
-  async getAll(): Promise<GetBasketResponse> {
-    return await ItemInBasket.find({ relations: ['shopItem'] });
+  async getAllForUser(userId: string): Promise<GetBasketResponse> {
+    const user = await this.userService.getOneUser(userId);
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    return await ItemInBasket.find({
+      where: {
+        user: {
+          id: userId,
+        },
+      },
+      relations: ['shopItem'],
+    });
   }
 
-  async getTotalPrice(): Promise<GetTotalPriceResponse> {
-    const items = await this.getAll();
+  async getAllForAdmin(): Promise<GetBasketResponse> {
+    return await ItemInBasket.find({
+      relations: ['shopItem', 'user'],
+    });
+  }
+
+  async getTotalPrice(userId: string): Promise<GetTotalPriceResponse> {
+    const items = await this.getAllForUser(userId);
+    console.log(items);
+
     if (!items.every((item) => this.shopService.hasProduct(item.id))) {
     }
-    return null;
+    return (
+      await Promise.all(
+        items.map(async (item) => item.shopItem.price * item.count * 1.23),
+      )
+    ).reduce((acc, curr) => acc + curr, 0);
+  }
+
+  async getStats(): Promise<GetBasketStatsResponse> {
+    const { itemInBasketAvgPrice } = await this.dataSource
+      .createQueryBuilder()
+      .select('AVG(shopItem.price)', 'itemInBasketAvgPrice')
+      .from(ItemInBasket, 'itemInBasket')
+      .leftJoinAndSelect('itemInBasket.shopItem', 'shopItem')
+      .getRawOne();
+
+    const allItemsInBasket = await this.getAllForAdmin();
+
+    const baskets: {
+      [userId: string]: number;
+    } = {};
+
+    for (const oneItemInBasket of allItemsInBasket) {
+      baskets[oneItemInBasket.user.id] = baskets[oneItemInBasket.user.id] || 0;
+
+      baskets[oneItemInBasket.user.id] +=
+        oneItemInBasket.shopItem.price * oneItemInBasket.count * 1.23;
+    }
+
+    const basketValues = Object.values(baskets);
+
+    const basketAvgTotalPrice =
+      basketValues.reduce((prev, curr) => prev + curr, 0) / basketValues.length;
+    return {
+      itemInBasketAvgPrice,
+      basketAvgTotalPrice,
+    };
   }
 }

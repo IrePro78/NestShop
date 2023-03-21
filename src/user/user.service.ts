@@ -5,11 +5,6 @@ import { RegisterUserResponse } from '../interfaces/user';
 
 @Injectable()
 export class UserService {
-  // constructor(
-  //   @Inject(forwardRef(() => BasketService))
-  //   private basketService: BasketService,
-  // ) {}
-
   async register(newUser: RegisterDto): Promise<RegisterUserResponse> {
     const user = new User();
 

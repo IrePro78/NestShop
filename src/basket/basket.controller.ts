@@ -13,6 +13,8 @@ import { BasketService } from './basket.service';
 import {
   AddProductToBasketResponse,
   GetBasketResponse,
+  GetBasketStatsResponse,
+  GetTotalPriceResponse,
   RemoveProductFromBasketResponse,
 } from '../interfaces/basket';
 
@@ -30,25 +32,42 @@ export class BasketController {
     return this.basketService.add(item);
   }
 
-  @Delete('/all')
-  clearBasket(): Promise<RemoveProductFromBasketResponse> {
-    return this.basketService.clearBasket();
-  }
-
-  @Delete('/:id')
-  removeProductFromBasket(
-    @Param('id') id: string,
+  @Delete('/all/:userId')
+  clearBasket(
+    @Param('userId') userId: string,
   ): Promise<RemoveProductFromBasketResponse> {
-    return this.basketService.remove(id);
+    return this.basketService.clearBasket(userId);
   }
 
-  @Get('/:')
-  getBasket(): Promise<GetBasketResponse> {
-    return this.basketService.getAll();
+  @Delete('/:ItemInBasketId/:userId')
+  removeProductFromBasket(
+    @Param('ItemInBasketId') ItemInBasketId: string,
+    @Param('userId') userId: string,
+  ): Promise<RemoveProductFromBasketResponse> {
+    return this.basketService.remove(userId, ItemInBasketId);
   }
 
-  @Get('/total_price')
-  getTotalPrice() {
-    return this.basketService.getTotalPrice();
+  @Get('/admin')
+  getBasketForAdmin(): Promise<GetBasketResponse> {
+    return this.basketService.getAllForAdmin();
+  }
+
+  @Get('/stats')
+  getStats(): Promise<GetBasketStatsResponse> {
+    return this.basketService.getStats();
+  }
+
+  @Get('/:userId')
+  getBasketForUser(
+    @Param('userId') userId: string,
+  ): Promise<GetBasketResponse> {
+    return this.basketService.getAllForUser(userId);
+  }
+
+  @Get('/total_price/:userId')
+  getTotalPrice(
+    @Param('userId') userId: string,
+  ): Promise<GetTotalPriceResponse> {
+    return this.basketService.getTotalPrice(userId);
   }
 }
