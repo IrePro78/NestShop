@@ -7,6 +7,7 @@ import {
   Inject,
   Param,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { AddProductDto } from './dto/add-product.dto';
 import { BasketService } from './basket.service';
@@ -17,6 +18,8 @@ import {
   GetTotalPriceResponse,
   RemoveProductFromBasketResponse,
 } from '../interfaces/basket';
+import { PasswordProtectGuard } from '../guards/password-protect/password-protect.guard';
+import { UsePassword } from '../decorators/use-password/use-password.decorator';
 
 @Controller('basket')
 export class BasketController {
@@ -48,11 +51,15 @@ export class BasketController {
   }
 
   @Get('/admin')
+  @UseGuards(PasswordProtectGuard)
+  @UsePassword('admin1')
   getBasketForAdmin(): Promise<GetBasketResponse> {
     return this.basketService.getAllForAdmin();
   }
 
   @Get('/stats')
+  @UseGuards(PasswordProtectGuard)
+  @UsePassword('admin2')
   getStats(): Promise<GetBasketStatsResponse> {
     return this.basketService.getStats();
   }
